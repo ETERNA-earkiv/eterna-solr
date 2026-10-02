@@ -1,0 +1,91 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  MELANGE_IMAGE: cgr.dev/chainguard/melange:latest
+  APKO_IMAGE: cgr.dev/chainguard/apko:latest
+
+jobs:
+  packages:
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-latest
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check tag matches Makefile VERSION
+        if: github.ref_type == 'tag'
+        run: |
+          expected="v$(make -s version)"
+          if [ "$GITHUB_REF_NAME" != "$expected" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME matchar inte VERSION i Makefile ($expected)"
+            exit 1
+          fi
+
+      - name: Write signing key
+        env:
+          MELANGE_RSA: ${{ secrets.MELANGE_RSA }}
+        run: |
+          printf '%s\n' "$MELANGE_RSA" > melange.rsa
+          openssl rsa -in melange.rsa -pubout -out melange.rsa.pub
+
+      - name: Build packages
+        run: |
+          make package ARCH=${{ matrix.arch }} \
+            MELANGE="docker run --rm --privileged -v $PWD:/work -w /work $MELANGE_IMAGE"
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.arch }}
+          path: packages/
+          retention-days: 1
+
+  publish:
+    needs: packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: packages-*
+          path: packages/
+          merge-multiple: true
+
+      - name: Write public key
+        env:
+          MELANGE_RSA: ${{ secrets.MELANGE_RSA }}
+        run: |
+          printf '%s\n' "$MELANGE_RSA" | openssl rsa -pubout -out melange.rsa.pub
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish image
+        run: |
+          make publish \
+            APKO="docker run --rm -v $PWD:/work -w /work -v $HOME/.docker:/docker -e DOCKER_CONFIG=/docker $APKO_IMAGE"

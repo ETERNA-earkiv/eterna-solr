@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+SOLR_LOGS_DIR="${SOLR_LOGS_DIR:-/var/solr/logs}"
+SOLR_HOME="${SOLR_HOME:-/var/solr/data}"
+
+mkdir -p "$SOLR_LOGS_DIR" "$SOLR_HOME"
+
+exec /sbin/tini -- /usr/share/java/solr/bin/solr start -f "$@"

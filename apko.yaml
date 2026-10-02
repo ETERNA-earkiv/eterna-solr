@@ -1,0 +1,67 @@
+contents:
+  repositories:
+    - https://packages.wolfi.dev/os
+    - "@local ./packages"
+  keyring:
+    - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    - melange.rsa.pub
+  packages:
+    - wolfi-baselayout
+    - ca-certificates-bundle
+    - bash
+    - busybox
+    - tini
+    - procps
+    - openjdk-17-default-jvm
+    - solr-9=9.10.1-r0@local
+    - solr-entrypoint@local
+
+accounts:
+  groups:
+    - groupname: solr
+      gid: 8983
+  users:
+    - username: solr
+      uid: 8983
+      shell: /bin/bash
+  run-as: "8983"
+
+paths:
+  - path: /var/solr
+    type: directory
+    uid: 8983
+    gid: 8983
+    permissions: 0o755
+  - path: /var/solr/data
+    type: directory
+    uid: 8983
+    gid: 8983
+    permissions: 0o755
+  - path: /var/solr/logs
+    type: directory
+    uid: 8983
+    gid: 8983
+    permissions: 0o755
+
+work-dir: /var/solr
+
+environment:
+  JAVA_HOME: /usr/lib/jvm/java-17-openjdk
+  PATH: /usr/share/java/solr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  SOLR_HOST: solr
+  SOLR_JETTY_HOST: "0.0.0.0"
+  SOLR_HOME: /var/solr/data
+  SOLR_LOGS_DIR: /var/solr/logs
+  SOLR_PID_DIR: /var/solr
+  SOLR_PORT: "8983"
+  GC_LOG_OPTS: ""
+  SOLR_OPTS: ""
+
+entrypoint:
+  command: /usr/local/bin/solr-entrypoint
+
+cmd: ""
+
+archs:
+  - x86_64
+  - aarch64
