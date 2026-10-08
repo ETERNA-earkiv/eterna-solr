@@ -13,7 +13,7 @@ contents:
     - tini
     - procps
     - openjdk-17-default-jvm
-    - solr-9=9.10.1-r0@local
+    - solr-9=9.11.0-r0@local
     - solr-entrypoint@local
 
 accounts:
