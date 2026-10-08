@@ -1,5 +1,5 @@
 IMAGE    := solr
-VERSION  := 9.10.1
+VERSION  := 9.11.0
 ARCH     := x86_64
 PACKAGES := ./packages
 TAG      := $(VERSION)
