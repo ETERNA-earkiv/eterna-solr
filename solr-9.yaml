@@ -1,8 +1,8 @@
 # Solr 9 byggd från källkod. Wolfi har bara Solr 10 kvar, så detta är en
-# port av Wolfis recept för solr 9.10.1-r4 (inkl. deras CVE-bumpar i versions.props).
+# port av Wolfis recept för solr 9.11.0 (inkl. deras CVE-bumpar i versions.props).
 package:
   name: solr-9
-  version: 9.10.1
+  version: 9.11.0
   epoch: 0
   description: Apache Solr open-source search software
   copyright:
