@@ -35,7 +35,7 @@ pipeline:
     with:
       repository: https://github.com/apache/solr
       tag: releases/solr/${{package.version}}
-      expected-commit: c135e6335c7158fa26e96b0dc386f825255b47c0
+      expected-commit: e62cb3b65f979f17ad988a11542e7a21d42244bc
 
   - runs: |
       sed -i -e 's|org.apache.zookeeper:\*=3.9.3|org.apache.zookeeper:\*=3.9.4|g' versions.props
